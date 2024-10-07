@@ -14,7 +14,7 @@ This application uses the following Twilio products in conjuction with OpenAI's 
 
 To use the app, you will  need:
 
-- **Python 3.9+** We used \`3.19.3\` for development; download from [here](https://www.python.org/downloads/).
+- **Python 3.9+** We used \`3.9.13\` for development; download from [here](https://www.python.org/downloads/).
 - **A Twilio account.** You can sign up for a free trial [here](https://www.twilio.com/try-twilio).
 - **A Twilio number with _Voice_ capabilities.** [Here are instructions](https://help.twilio.com/articles/223135247-How-to-Search-for-and-Buy-a-Twilio-Phone-Number-from-Console) to purchase a phone number.
 - **An OpenAI account and an OpenAI API Key.** You can sign up [here](https://platform.openai.com/).
