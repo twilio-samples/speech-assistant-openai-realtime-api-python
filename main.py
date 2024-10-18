@@ -22,9 +22,18 @@ SYSTEM_MESSAGE = (
 )
 VOICE = 'alloy'
 LOG_EVENT_TYPES = [
-    'response.content.done', 'rate_limits.updated', 'response.done',
-    'input_audio_buffer.committed', 'input_audio_buffer.speech_stopped',
-    'input_audio_buffer.speech_started', 'session.created'
+    'error',
+    'response.content.done',
+    'rate_limits.updated',
+    'response.done',
+    'input_audio_buffer.committed',
+    'input_audio_buffer.speech_stopped',
+    'input_audio_buffer.speech_started',
+    'session.created',
+
+    # Transcripts
+    'response.audio_transcript.done',
+    'conversation.item.input_audio_transcription.completed',
 ]
 
 app = FastAPI()
@@ -124,6 +133,9 @@ async def send_session_update(openai_ws):
             "turn_detection": {"type": "server_vad"},
             "input_audio_format": "g711_ulaw",
             "output_audio_format": "g711_ulaw",
+            "input_audio_transcription": {
+                "model": "whisper-1"
+            },
             "voice": VOICE,
             "instructions": SYSTEM_MESSAGE,
             "modalities": ["text", "audio"],
