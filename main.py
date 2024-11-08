@@ -9,7 +9,7 @@ from twilio.rest import Client  # type: ignore
 
 from entity import Call, Session
 from media_stream_handler import MediaStreamConnection
-from settings import OPENAI_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
+from settings import API_KEY, OPENAI_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
 
 PORT = int(os.getenv('PORT', 5050))
 VOICE = 'alloy'
@@ -23,6 +23,10 @@ sessions: dict[str, Session] = {}
 
 @app.post("/call")
 async def call(request: Request, call: Call) -> PlainTextResponse:
+    api_key: Optional[str] = request.headers.get("Authorization")
+    if api_key != f"Bearer {API_KEY}":
+        raise HTTPException(403, "Invalid phone call tool API key.")
+
     call_id: str = str(uuid.uuid4())
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     host = request.url.hostname

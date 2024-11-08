@@ -4,12 +4,15 @@ from typing import Any
 import requests
 
 BASE_URL: str = "https://link-to-service"
+API_KEY: str = "the-key"
 
 
 def phone_call(phone: str, intent_prompt: str) -> Any:
     response: requests.Response = requests.post(f"{BASE_URL}/call", json={
         "phone": phone,
         "intent_prompt": intent_prompt,
+    }, headers={
+        "Authorization": f"Bearer {API_KEY}"
     })
     response.raise_for_status()
 

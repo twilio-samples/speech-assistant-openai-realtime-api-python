@@ -30,3 +30,5 @@ OPENAI_API_KEY: str = _get_or_raise("OPENAI_API_KEY")
 # Twilio account credentials with active source phone number
 TWILIO_ACCOUNT_SID: str = _get_or_raise("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN: str = _get_or_raise("TWILIO_AUTH_TOKEN")
+# Key for this phone tool API
+API_KEY: str = _get_or_raise("API_KEY")
