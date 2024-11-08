@@ -1,3 +1,45 @@
+# SIMS Phone Call Demo
+
+Contains the following REST operations:
+
+## `/call` (POST)
+
+Starts a new call to the given phone from the OAI model, based on the given
+intent prompt:
+
+```json
+{
+  "phone": "+41123456789",
+  "intent_prompt": "You are a friendly tax accountant calling someone in order to get their unique taxpayer ID, which they forgot to add in their form."
+}
+```
+
+The response is a plain text (not JSON) call ID which can be used to retrieve
+the transcript when the model finishes.
+
+- `/transcript` (GET): Retrieves the transcript of a previously started call.
+
+Will return HTTP status code 202 if the conversation is not finished yet. The
+intent is to invoke this method in a loop until it returns the status code 200.
+Once the call is finished, it returns the transcript as a JSON list of
+messages:
+
+```json
+[
+  {
+    "sender": "user",
+    "content": "Hello, this is Pascal Kessler speaking.\n"
+  },
+  {
+    "sender": "agent",
+    "content": "Hello, I'm calling from the tax office. We noticed that your recent form submission was missing your unique taxpayer ID. Could you please provide it so we can complete your records?"
+  }
+]
+```
+
+The instructions below are from the original Twilio example project.
+
+
 #  Speech Assistant with Twilio Voice and the OpenAI Realtime API (Python)
 
 This application demonstrates how to use Python, [Twilio Voice](https://www.twilio.com/docs/voice) and [Media Streams](https://www.twilio.com/docs/voice/media-streams), and [OpenAI's Realtime API](https://platform.openai.com/docs/) to make a phone call to speak with an AI Assistant. 
