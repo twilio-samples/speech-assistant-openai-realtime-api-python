@@ -37,6 +37,16 @@ messages:
 ]
 ```
 
+## `tool.py`
+
+`tool.py` provides an example of how to integrate this service as an agent tool.
+
+```bash
+python .\tool.py
+[{'sender': 'user', 'content': 'Hello, this is Pascal speaking.\n'}, {'sender': 'agent', 'content': "Hello Pascal, this is [Your Name] calling from [Your Company Name]. I hope you're doing well. The reason for my call is that we noticed you forgot to include your unique taxpayer ID on your form. Would you be able to provide that to me now?"}, {'sender': 'user', 'content': "Oh yeah, we're in my bench. That's one, two, three, Pascal.\n"}, {'sender': 'agent', 'content': "Thank you, Pascal. For security reasons, I'll need the complete ID. Could you please provide the full number?"}, {'sender': 'user', 'content': 'The complete number is 1, 2, 3, 4.\n'}, {'sender': 'user', 'content': 'Full ID.\n'}, {'sender': 'agent', 'content': "Thank you for confirming, Pascal. 
+I appreciate your help. If I need any more information, I'll be sure to reach out. Have a great day!"}, {'sender': 'user', 'content': 'You too. Thank you. Bye.\n'}, {'sender': 'agent', 'content': "You're welcome, Pascal. Take care!"}]
+```
+
 The instructions below are from the original Twilio example project.
 
 
