@@ -6,7 +6,7 @@ The application opens websockets with the OpenAI Realtime API and Twilio, and se
 
 See [here](https://www.twilio.com/en-us/blog/voice-ai-assistant-openai-realtime-api-python) for a tutorial overview of the code.
 
-This application uses the following Twilio products in conjuction with OpenAI's Realtime API:
+This application uses the following Twilio products in conjunction with OpenAI's Realtime API:
 - Voice (and TwiML, Media Streams)
 - Phone Numbers
 
@@ -96,4 +96,4 @@ To have the AI voice assistant talk before the user, uncomment the line `# await
 ### Interrupt handling/AI preemption
 When the user speaks and OpenAI sends `input_audio_buffer.speech_started`, the code will clear the Twilio Media Streams buffer and send OpenAI `conversation.item.truncate`.
 
-Depending on your application's needs, you may want to use the [`input_audio_buffer.speech_stopped`](https://platform.openai.com/docs/api-reference/realtime-server-events/input-audio-buffer-speech-stopped) event, instead, os a combination of the two.
+Depending on your application's needs, you may want to use the [`input_audio_buffer.speech_stopped`](https://platform.openai.com/docs/api-reference/realtime-server-events/input-audio-buffer-speech-stopped) event, instead, or a combination of the two.
