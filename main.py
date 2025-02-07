@@ -8,7 +8,6 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.websockets import WebSocketDisconnect
 from twilio.twiml.voice_response import VoiceResponse, Connect, Say, Stream
 from dotenv import load_dotenv
-from datetime import datetime
 from AI_info import SYSTEM_MESSAGE, FIRST_CUSTOMER_MESSAGE, SECOND_CUSTOMER_MESSAGE, INITIAL_CONVERSATION_MESSAGE
 
 load_dotenv()
@@ -22,84 +21,14 @@ LOG_EVENT_TYPES = [
     'error', 'response.content.done', 'rate_limits.updated',
     'response.done', 'input_audio_buffer.committed',
     'input_audio_buffer.speech_stopped', 'input_audio_buffer.speech_started',
-    'session.created', 'response.function_call_arguments.delta'
+    'session.created'
 ]
 SHOW_TIMING_MATH = False
-
-# Define available tools
-AVAILABLE_TOOLS = [
-    {
-        "type": "function",
-        "name": "get_current_time",
-        "description": "Get the current time and date",
-        "parameters": {
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
-    },
-    {
-        "type": "function",
-        "name": "generate_horoscope",
-        "description": "Give today's horoscope for an astrological sign.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "sign": {
-                    "type": "string",
-                    "description": "The sign for the horoscope.",
-                    "enum": [
-                        "Aries", "Taurus", "Gemini", "Cancer",
-                        "Leo", "Virgo", "Libra", "Scorpio",
-                        "Sagittarius", "Capricorn", "Aquarius", "Pisces"
-                    ]
-                }
-            },
-            "required": ["sign"]
-        }
-    }
-]
 
 app = FastAPI()
 
 if not OPENAI_API_KEY:
     raise ValueError('Missing the OpenAI API key. Please set it in the .env file.')
-
-
-# Tool implementation functions
-async def get_current_time():
-    """Get the current time and date."""
-    current_time = datetime.now()
-    return {
-        "time": current_time.strftime("%I:%M %p"),
-        "date": current_time.strftime("%B %d, %Y")
-    }
-
-
-async def generate_horoscope(sign: str):
-    """Generate a horoscope for the given sign."""
-    # This is a simple example - you might want to integrate with an actual horoscope API
-    horoscopes = {
-        "Aquarius": "Today is a great day for creative endeavors. Your innovative thinking will lead to exciting opportunities.",
-        # Add more horoscopes for other signs
-    }
-    return {"horoscope": horoscopes.get(sign, "The stars are aligned for a wonderful day!")}
-
-
-# Tool dispatcher
-async def execute_tool(name: str, arguments: dict):
-    """Execute the appropriate tool based on the name."""
-    tool_functions = {
-        "get_current_time": get_current_time,
-        "generate_horoscope": generate_horoscope
-    }
-
-    if name not in tool_functions:
-        raise ValueError(f"Unknown tool: {name}")
-
-    function = tool_functions[name]
-    return await function(**arguments)
-
 
 @app.get("/", response_class=JSONResponse)
 async def index_page():
@@ -140,35 +69,7 @@ async def handle_media_stream(websocket: WebSocket):
         last_assistant_item = None
         mark_queue = []
         response_start_timestamp_twilio = None
-
-        async def handle_function_call(response_data):
-            """Handle function calls from the model."""
-            if 'output' in response_data['response']:
-                for output in response_data['response']['output']:
-                    if output['type'] == 'function_call':
-                        try:
-                            # Parse the arguments
-                            arguments = json.loads(output['arguments'])
-
-                            # Execute the tool
-                            result = await execute_tool(output['name'], arguments)
-
-                            # Send the result back to the model
-                            function_result = {
-                                "type": "conversation.item.create",
-                                "item": {
-                                    "type": "function_call_output",
-                                    "call_id": output['call_id'],
-                                    "output": json.dumps(result)
-                                }
-                            }
-                            await openai_ws.send(json.dumps(function_result))
-
-                            # Create a new response
-                            await openai_ws.send(json.dumps({"type": "response.create"}))
-                        except Exception as e:
-                            print(f"Error executing function {output['name']}: {e}")
-
+        
         async def receive_from_twilio():
             """Receive audio data from Twilio and send it to the OpenAI Realtime API."""
             nonlocal stream_sid, latest_media_timestamp
@@ -344,8 +245,6 @@ async def initialize_session(openai_ws):
             "instructions": SYSTEM_MESSAGE,
             "modalities": ["text", "audio"],
             "temperature": 0.8,
-            "tools": AVAILABLE_TOOLS,
-            "tool_choice": "auto"
         }
     }
     print('Sending session update:', json.dumps(session_update))
