@@ -19,6 +19,7 @@ SYSTEM_MESSAGE = (
     "anything the user is interested in and is prepared to offer them facts. "
     "You have a penchant for dad jokes, owl jokes, and rickrolling – subtly. "
     "Always stay positive, but work in a joke when appropriate."
+    "To end a call say something under 10s, and append'GOODBYE();' at the end of your response. if what you say is longer than 10s, the call will end before you finish so keep it short! "
 )
 VOICE = 'alloy'
 LOG_EVENT_TYPES = [
@@ -110,6 +111,41 @@ async def handle_media_stream(websocket: WebSocket):
                     if response['type'] in LOG_EVENT_TYPES:
                         print(f"Received event: {response['type']}", response)
 
+                        #when recibeing a response such as:
+                        # Received event: response.done {'type': 'response.done', 'event_id': 'event_Ay6rw3ubdNsUMX4urDVLV', 'response': {'object': 'realtime.response', 'id': 'resp_Ay6ru4MmxwRXaKbVu99jU', 'status': 'completed', 'status_details': None, 'output': [{'id': 'item_Ay6rucHQdCLuaZDaArL3M', 'object': 'realtime.item', 'type': 'message', 'status': 'completed', 'role': 'assistant', 'content': [{'type': 'audio', 'transcript': "Hello! You're speaking with your friendly AI assistant. How can I help you today?"}]}], 'conversation_id': 'conv_Ay6rpLbGjOOhi8n3HhDHB', 'modalities': ['text', 'audio'], 'voice': 'alloy', 'output_audio_format': 'g711_ulaw', 'temperature': 0.8, 'max_output_tokens': 'inf', 'usage': {'total_tokens': 221, 'input_tokens': 81, 'output_tokens': 140, 'input_token_details': {'text_tokens': 65, 'audio_tokens': 16, 'cached_tokens': 0, 'cached_tokens_details': {'text_tokens': 0, 'audio_tokens': 0}}, 'output_token_details': {'text_tokens': 31, 'audio_tokens': 109}}, 'metadata': None}}
+                        
+                        #first check if response['type'] == 'response.done' and response['response']['output'] is not None:
+                        if response['type'] == 'response.done':
+                            #print("\n\n\n @Received response.done!!!")
+                            if response['response'] is not None:
+                                # print(f"Received event: {response['type']}", response)
+                                response_object = response['response']
+                                #print(f"\n\n@response_object: {response_object}")
+                                if not response_object['output'] == []:
+                                    #print(f"\n\n@response_object['output']: {response_object['output']}")
+                                    output = response_object['output'][0]
+                                    #print(f"\n\n@output: {output}")
+
+                                    if output['role'] == 'assistant':
+                                        #print(f"\n\n\n @Received assistant response!!!")
+
+                                        #check if output['content'] is not None:
+                                        if output['content'] is not None:
+                                            content = output['content'][0]
+                                            #print(f"\n\n@content: {content}")
+                                            #check if content[`transcript`] is not None:
+                                            if content['transcript'] is not None:
+                                                transcript = content['transcript']
+                                                #(f"\n\n@transcript: {transcript}")
+
+                                                #check if transcript ends with '@END_TWILIO_PHONECALL();':
+                                                if transcript.endswith('GOODBYE();'):
+                                                    print(f"\n\n\n @Received END_TWILIO_PHONECALL response!!!")
+                                                    # Wait for a short duration to ensure all audio is sent before ending the call
+                                                    await asyncio.sleep(10)
+                                                    await websocket.close()
+                                                    return
+                                                
                     if response.get('type') == 'response.audio.delta' and 'delta' in response:
                         audio_payload = base64.b64encode(base64.b64decode(response['delta'])).decode('utf-8')
                         audio_delta = {
