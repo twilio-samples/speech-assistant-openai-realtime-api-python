@@ -3,6 +3,7 @@ let audioContext;
 let processor;
 let mediaStream;
 let isRecording = false;
+let nextPlaybackTime = 0;
 
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
@@ -36,6 +37,7 @@ function handleMessage(event) {
 
 async function startAudio() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 8000});
+    nextPlaybackTime = audioContext.currentTime;
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const source = audioContext.createMediaStreamSource(mediaStream);
     if (audioContext.audioWorklet) {
@@ -76,6 +78,7 @@ function stopAudio() {
     if (audioContext) {
         audioContext.close();
     }
+    nextPlaybackTime = 0;
     isRecording = false;
 }
 
@@ -125,5 +128,6 @@ function playAudio(pcm) {
     const src = audioContext.createBufferSource();
     src.buffer = buffer;
     src.connect(audioContext.destination);
-    src.start();
+    src.start(nextPlaybackTime);
+    nextPlaybackTime += buffer.duration;
 }
