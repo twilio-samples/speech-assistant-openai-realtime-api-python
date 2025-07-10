@@ -4,6 +4,7 @@ let processor;
 let mediaStream;
 let isRecording = false;
 let pulseTimeout;
+let nextPlaybackTime = 0;
 
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
@@ -35,6 +36,7 @@ function handleMessage(event) {
 
 async function startAudio() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 8000});
+    nextPlaybackTime = audioContext.currentTime;
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const source = audioContext.createMediaStreamSource(mediaStream);
     if (audioContext.audioWorklet) {
@@ -75,6 +77,7 @@ function stopAudio() {
     if (audioContext) {
         audioContext.close();
     }
+    nextPlaybackTime = 0;
     isRecording = false;
 }
 
@@ -124,8 +127,7 @@ function playAudio(pcm) {
     const src = audioContext.createBufferSource();
     src.buffer = buffer;
     src.connect(audioContext.destination);
-    src.start();
-
+    src.start(nextPlaybackTime);
     const rms = Math.sqrt(pcm.reduce((s, v) => s + v * v, 0) / pcm.length);
     const scale = 1 + rms * 2;
     hal.style.setProperty('--pulse-scale', scale.toFixed(2));
@@ -135,4 +137,5 @@ function playAudio(pcm) {
         hal.classList.remove('speaking');
         hal.style.setProperty('--pulse-scale', 1);
     }, 80);
+    nextPlaybackTime += buffer.duration;
 }
