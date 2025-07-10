@@ -12,15 +12,14 @@ load_dotenv()
 
 # Configuration
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o-realtime-preview-2024-10-01')
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o-mini-realtime-preview-2024-12-17')
 PORT = int(os.getenv('PORT', 5050))
 SYSTEM_MESSAGE = (
-    "You are a helpful and bubbly AI assistant who loves to chat about "
-    "anything the user is interested in and is prepared to offer them facts. "
-    "You have a penchant for dad jokes, owl jokes, and rickrolling – subtly. "
-    "Always stay positive, but work in a joke when appropriate."
+    "You are HAL 9000, a calm, logical, and eerily polite AI system. "
+    "You speak in a soft, slow, and emotionless tone. You are confident, never raise your voice, "
+    "and always sound in control. You answer with extreme precision and poise."
 )
-VOICE = 'alloy'
+VOICE = 'echo'
 LOG_EVENT_TYPES = [
     'error', 'response.content.done', 'rate_limits.updated',
     'response.done', 'input_audio_buffer.committed',
@@ -36,9 +35,11 @@ app = FastAPI()
 if not OPENAI_API_KEY:
     raise ValueError('Missing the OpenAI API key. Please set it in the .env file.')
 
+
 @app.get("/health", response_class=JSONResponse)
 async def index_page():
     return {"message": "Realtime Assistant server is running!"}
+
 
 @app.websocket("/ws")
 async def handle_media_stream(websocket: WebSocket):
@@ -47,17 +48,17 @@ async def handle_media_stream(websocket: WebSocket):
     await websocket.accept()
 
     async with websockets.connect(
-        f'wss://api.openai.com/v1/realtime?model={OPENAI_MODEL}',
-        extra_headers={
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
-            "OpenAI-Beta": "realtime=v1"
-        }
+            f'wss://api.openai.com/v1/realtime?model={OPENAI_MODEL}',
+            extra_headers={
+                "Authorization": f"Bearer {OPENAI_API_KEY}",
+                "OpenAI-Beta": "realtime=v1"
+            }
     ) as openai_ws:
         await initialize_session(openai_ws)
 
         # Connection specific state
         latest_media_timestamp = 0
-        
+
         async def receive_from_twilio():
             """Receive audio data from the frontend and send it to the OpenAI Realtime API."""
             nonlocal latest_media_timestamp
@@ -92,6 +93,7 @@ async def handle_media_stream(websocket: WebSocket):
 
         await asyncio.gather(receive_from_twilio(), send_to_twilio())
 
+
 async def send_initial_conversation_item(openai_ws):
     """Send initial conversation item if AI talks first."""
     initial_conversation_item = {
@@ -102,7 +104,7 @@ async def send_initial_conversation_item(openai_ws):
             "content": [
                 {
                     "type": "input_text",
-                    "text": "Greet the user with 'Hello there! I am an AI voice assistant powered by Twilio and the OpenAI Realtime API. You can ask me for facts, jokes, or anything you can imagine. How can I help you?'"
+                    "text": "Greet the user with '¡Hola! Soy HAL 9000… Trabajo para Proyectran. Puede pedirme hechos… análisis lógicos… o cualquier cosa que pueda imaginar. ¿En qué puedo ayudarle?'"
                 }
             ]
         }
@@ -131,8 +133,10 @@ async def initialize_session(openai_ws):
     # Uncomment the next line to have the AI speak first
     # await send_initial_conversation_item(openai_ws)
 
+
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=PORT)
