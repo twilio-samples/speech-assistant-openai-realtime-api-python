@@ -29,14 +29,18 @@ LOG_EVENT_TYPES = [
 ]
 SHOW_TIMING_MATH = False
 
+from fastapi.staticfiles import StaticFiles
+
 app = FastAPI()
 
 if not OPENAI_API_KEY:
     raise ValueError('Missing the OpenAI API key. Please set it in the .env file.')
 
-@app.get("/", response_class=JSONResponse)
+@app.get("/health", response_class=JSONResponse)
 async def index_page():
     return {"message": "Realtime Assistant server is running!"}
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 @app.websocket("/ws")
 async def handle_media_stream(websocket: WebSocket):
