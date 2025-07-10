@@ -38,18 +38,31 @@ async function startAudio() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 8000});
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const source = audioContext.createMediaStreamSource(mediaStream);
-    processor = audioContext.createScriptProcessor(1024, 1, 1);
+    if (audioContext.audioWorklet) {
+        await audioContext.audioWorklet.addModule('/worklet.js');
+        processor = new AudioWorkletNode(audioContext, 'capture-processor');
+        processor.port.onmessage = e => {
+            const pcm16 = e.data;
+            const ulaw = pcmToUlaw(pcm16);
+            const b64 = btoa(String.fromCharCode(...ulaw));
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({audio: b64}));
+            }
+        };
+    } else {
+        processor = audioContext.createScriptProcessor(1024, 1, 1);
+        processor.onaudioprocess = e => {
+            const input = e.inputBuffer.getChannelData(0);
+            const pcm16 = floatTo16BitPCM(input);
+            const ulaw = pcmToUlaw(pcm16);
+            const b64 = btoa(String.fromCharCode(...ulaw));
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({audio: b64}));
+            }
+        };
+    }
     source.connect(processor);
     processor.connect(audioContext.destination);
-    processor.onaudioprocess = e => {
-        const input = e.inputBuffer.getChannelData(0);
-        const pcm16 = floatTo16BitPCM(input);
-        const ulaw = pcmToUlaw(pcm16);
-        const b64 = btoa(String.fromCharCode(...ulaw));
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({audio: b64}));
-        }
-    };
     isRecording = true;
 }
 

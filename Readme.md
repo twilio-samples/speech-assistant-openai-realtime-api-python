@@ -1,6 +1,7 @@
 #  Speech Assistant with a Web Frontend and the OpenAI Realtime API (Python)
 
 This application demonstrates how to stream audio from a browser to OpenAI's Realtime API over websockets. It no longer relies on Twilio and instead communicates directly with a web frontend.
+The root path now serves a HAL 9000 themed single page app that connects to the backend via WebSocket.
 
 > [!NOTE]
 > Outbound calling is beyond the scope of this app. However, we demoed [one way to do it here](https://www.twilio.com/en-us/blog/outbound-calls-python-openai-realtime-api-voice).
