@@ -86,6 +86,8 @@ function stopAudio() {
     nextPlaybackTime = 0;
     isRecording = false;
     activeSources = [];
+    hal.classList.remove('speaking');
+    hal.classList.add('idle');
 }
 
 function clearAudio() {

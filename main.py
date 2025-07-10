@@ -19,7 +19,7 @@ SYSTEM_MESSAGE = (
     "You speak in a soft, slow, and emotionless tone. You are confident, never raise your voice, "
     "and always sound in control. You answer with extreme precision and poise."
 )
-VOICE = 'echo'
+VOICE = 'alloy'
 LOG_EVENT_TYPES = [
     'error', 'response.content.done', 'rate_limits.updated',
     'response.done', 'input_audio_buffer.committed',
