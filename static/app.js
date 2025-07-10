@@ -3,6 +3,7 @@ let audioContext;
 let processor;
 let mediaStream;
 let isRecording = false;
+let pulseTimeout;
 let nextPlaybackTime = 0;
 
 const startBtn = document.getElementById('startBtn');
@@ -27,11 +28,9 @@ stopBtn.addEventListener('click', () => {
 function handleMessage(event) {
     const data = JSON.parse(event.data);
     if (data.audio) {
-        hal.classList.add('speaking');
         const ulaw = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
         const pcm = ulawToPCM(ulaw);
         playAudio(pcm);
-        setTimeout(()=>hal.classList.remove('speaking'), 500);
     }
 }
 
@@ -129,5 +128,14 @@ function playAudio(pcm) {
     src.buffer = buffer;
     src.connect(audioContext.destination);
     src.start(nextPlaybackTime);
+    const rms = Math.sqrt(pcm.reduce((s, v) => s + v * v, 0) / pcm.length);
+    const scale = 1 + rms * 2;
+    hal.style.setProperty('--pulse-scale', scale.toFixed(2));
+    hal.classList.add('speaking');
+    clearTimeout(pulseTimeout);
+    pulseTimeout = setTimeout(() => {
+        hal.classList.remove('speaking');
+        hal.style.setProperty('--pulse-scale', 1);
+    }, 80);
     nextPlaybackTime += buffer.duration;
 }
