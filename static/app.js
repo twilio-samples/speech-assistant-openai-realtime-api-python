@@ -10,6 +10,7 @@ let activeSources = [];
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const hal = document.querySelector('.animation');
+hal.classList.add('idle');
 
 startBtn.addEventListener('click', async () => {
     ws = new WebSocket(`ws://${location.host}/ws`);
@@ -98,6 +99,7 @@ function clearAudio() {
         nextPlaybackTime = 0;
     }
     hal.classList.remove('speaking');
+    hal.classList.add('idle');
 }
 
 function floatTo16BitPCM(input) {
@@ -151,13 +153,14 @@ function playAudio(pcm) {
     }
     src.start(nextPlaybackTime);
     activeSources.push(src);
+    hal.classList.remove('idle');
+    hal.classList.add('speaking');
     src.onended = () => {
         activeSources = activeSources.filter(s => s !== src);
+        if (activeSources.length === 0) {
+            hal.classList.remove('speaking');
+            hal.classList.add('idle');
+        }
     };
-    hal.classList.add('speaking');
-    clearTimeout(pulseTimeout);
-    pulseTimeout = setTimeout(() => {
-        hal.classList.remove('speaking');
-    }, 80);
     nextPlaybackTime += buffer.duration;
 }

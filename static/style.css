@@ -14,6 +14,11 @@ body {
     left: 0;
     z-index: 10000; }
 
+.ui-overlay {
+  position: relative;
+  z-index: 10001; /* mayor que el body::before */
+}
+
 /* Basic setup */
 div {
   border-radius: 100%;
@@ -195,18 +200,42 @@ div {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000; }
+  z-index: 1000;
+  pointer-events: none;
+}
 
+/* Estado de poca actividad (parpadeo lento, suave) */
+.animation.idle {
+  animation: flickerIdle 1.5s infinite;
+}
+
+/* Estado de mucha actividad (parpadeo rápido e intenso) */
 .animation.speaking {
-  animation: flicker 0.3s infinite; }
+  animation: flickerSpeaking 0.3s infinite;
+}
 
-@keyframes flicker {
+/* Animación suave (poca actividad) */
+@keyframes flickerIdle {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Animación intensa (mucha actividad) */
+@keyframes flickerSpeaking {
   0% {
-    opacity: 0; }
+    opacity: 0;
+  }
   15% {
-    opacity: 1; }
+    opacity: 1;
+  }
   75% {
-    opacity: 0; } }
+    opacity: 0;
+  }
+}
 
 button {
     margin: 5px;
