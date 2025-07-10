@@ -1,99 +1,48 @@
-#  Speech Assistant with a Web Frontend and the OpenAI Realtime API (Python)
+# HAL 9000 Web Speech Assistant (Python)
 
-This application demonstrates how to stream audio from a browser to OpenAI's Realtime API over websockets. It no longer relies on Twilio and instead communicates directly with a web frontend.
-The root path now serves a HAL 9000 themed single page app that connects to the backend via WebSocket.
-
-> [!NOTE]
-> Outbound calling is beyond the scope of this app. However, we demoed [one way to do it here](https://www.twilio.com/en-us/blog/outbound-calls-python-openai-realtime-api-voice).
+This project exposes a small FastAPI server that connects a HAL 9000‑themed web interface with the OpenAI Realtime API. Audio from your microphone is streamed to OpenAI over WebSocket and the synthesized response is played back in the browser.
 
 ## Prerequisites
 
-To use the app, you will  need:
-
-- **Python 3.9+** We used \`3.9.13\` for development; download from [here](https://www.python.org/downloads/).
-- **A Twilio account.** You can sign up for a free trial [here](https://www.twilio.com/try-twilio).
-- **A Twilio number with _Voice_ capabilities.** [Here are instructions](https://help.twilio.com/articles/223135247-How-to-Search-for-and-Buy-a-Twilio-Phone-Number-from-Console) to purchase a phone number.
-- **An OpenAI account and an OpenAI API Key.** You can sign up [here](https://platform.openai.com/).
-  - **OpenAI Realtime API access.**
+- **Python 3.9+** – the project was developed on 3.9.13
+- **An OpenAI API key** with access to the Realtime API
+- Optional: Docker if you prefer running the container
 
 ## Local Setup
 
-There are 4 required steps and 1 optional step to get the app up-and-running locally for development and testing:
-1. Run ngrok or another tunneling solution to expose your local server to the internet for testing. Download ngrok [here](https://ngrok.com/).
-2. (optional) Create and use a virtual environment
-3. Install the packages
-4. Twilio setup
-5. Update the .env file
+1. (Optional) create and activate a virtual environment
+   ```bash
+   python3 -m venv env
+   source env/bin/activate
+   ```
+2. Install the dependencies
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Copy the example environment file and add your credentials
+   ```bash
+   cp .env.example .env
+   # edit .env and set OPENAI_API_KEY
+   ```
+4. Start the server
+   ```bash
+   python main.py
+   ```
 
-### Open an ngrok tunnel
-When developing & testing locally, you'll need to open a tunnel to forward requests to your local development server. These instructions use ngrok.
-
-Open a Terminal and run:
-```
-ngrok http 5050
-```
-Once the tunnel has been opened, copy the `Forwarding` URL. It will look something like: `https://[your-ngrok-subdomain].ngrok.app`. You will
-need this when configuring your Twilio number setup.
-
-Note that the `ngrok` command above forwards to a development server running on port `5050`, which is the default port configured in this application. If
-you override the `PORT` defined in `index.js`, you will need to update the `ngrok` command accordingly.
-
-Keep in mind that each time you run the `ngrok http` command, a new URL will be created, and you'll need to update it everywhere it is referenced below.
-
-### (Optional) Create and use a virtual environment
-
-To reduce cluttering your global Python environment on your machine, you can create a virtual environment. On your command line, enter:
-
-```
-python3 -m venv env
-source env/bin/activate
-```
-
-### Install required packages
-
-In the terminal (with the virtual environment, if you set it up) run:
-```
-pip install -r requirements.txt
-```
-
-### Twilio setup
-
-#### Point a Phone Number to your ngrok URL
-In the [Twilio Console](https://console.twilio.com/), go to **Phone Numbers** > **Manage** > **Active Numbers** and click on the additional phone number you purchased for this app in the **Prerequisites**.
-
-In your Phone Number configuration settings, update the first **A call comes in** dropdown to **Webhook**, and paste your ngrok forwarding URL (referenced above), followed by `/incoming-call`. For example, `https://[your-ngrok-subdomain].ngrok.app/incoming-call`. Then, click **Save configuration**.
-
-### Update the .env file
-
-Create a `/env` file, or copy the `.env.example` file to `.env`:
-
-```
-cp .env.example .env
-```
-
-In the .env file, update the `OPENAI_API_KEY` to your OpenAI API key from the **Prerequisites**.
-
-## Run the app
-Once ngrok is running, dependencies are installed, Twilio is configured properly, and the `.env` is set up, run the dev server with the following command:
-```
-python main.py
-```
-## Test the app
-With the development server running, call the phone number you purchased in the **Prerequisites**. After the introduction, you should be able to talk to the AI Assistant. Have fun!
-
-## Special features
-
-### Have the AI speak first
-To have the AI voice assistant talk before the user, uncomment the line `# await send_initial_conversation_item(openai_ws)`. The initial greeting is controlled in `async def send_initial_conversation_item(openai_ws)`.
-
-### Interrupt handling/AI preemption
-If you begin talking while HAL is speaking, the server reacts to the `input_audio_buffer.speech_started` event. The realtime session is configured with `interrupt_response` so OpenAI stops the current reply and the browser receives a `clear` message to halt audio playback.
+Visit `http://localhost:5050` and click **Start** to converse with HAL.
 
 ## Docker
 
-Create a `.env` file using `.env.example` and then run:
-
+Create the `.env` file as above and run:
 ```bash
 docker compose up --build
 ```
 
+## Features
+
+- HAL 9000 inspired UI served from the `static` folder
+- Streams audio to and from the OpenAI Realtime API
+- Optional initial greeting (see `send_initial_conversation_item` in `main.py`)
+- Basic interruption handling when you talk over HAL
+
+Have fun—and remember, HAL is always listening.
