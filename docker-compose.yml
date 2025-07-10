@@ -1,0 +1,11 @@
+version: '3'
+services:
+  app:
+    build: .
+    env_file: .env
+    ports:
+      - "${PORT:-5050}:5050"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LLM_MODEL=${LLM_MODEL}
+      - PORT=${PORT}
