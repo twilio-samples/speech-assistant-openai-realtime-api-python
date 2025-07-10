@@ -12,7 +12,7 @@ load_dotenv()
 
 # Configuration
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-LLM_MODEL = os.getenv('LLM_MODEL', 'gpt-4o-realtime-preview-2024-10-01')
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o-realtime-preview-2024-10-01')
 PORT = int(os.getenv('PORT', 5050))
 SYSTEM_MESSAGE = (
     "You are a helpful and bubbly AI assistant who loves to chat about "
@@ -45,7 +45,7 @@ async def handle_media_stream(websocket: WebSocket):
     await websocket.accept()
 
     async with websockets.connect(
-        f'wss://api.openai.com/v1/realtime?model={LLM_MODEL}',
+        f'wss://api.openai.com/v1/realtime?model={OPENAI_MODEL}',
         extra_headers={
             "Authorization": f"Bearer {OPENAI_API_KEY}",
             "OpenAI-Beta": "realtime=v1"
