@@ -87,9 +87,7 @@ With the development server running, call the phone number you purchased in the 
 To have the AI voice assistant talk before the user, uncomment the line `# await send_initial_conversation_item(openai_ws)`. The initial greeting is controlled in `async def send_initial_conversation_item(openai_ws)`.
 
 ### Interrupt handling/AI preemption
-When the user speaks and OpenAI sends `input_audio_buffer.speech_started`, the code will clear the Twilio Media Streams buffer and send OpenAI `conversation.item.truncate`.
-
-Depending on your application's needs, you may want to use the [`input_audio_buffer.speech_stopped`](https://platform.openai.com/docs/api-reference/realtime-server-events/input-audio-buffer-speech-stopped) event, instead, or a combination of the two.
+If you begin talking while HAL is speaking, the server reacts to the `input_audio_buffer.speech_started` event. The realtime session is configured with `interrupt_response` so OpenAI stops the current reply and the browser receives a `clear` message to halt audio playback.
 
 ## Docker
 
