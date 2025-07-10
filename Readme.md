@@ -1,14 +1,6 @@
-#  Speech Assistant with Twilio Voice and the OpenAI Realtime API (Python)
+#  Speech Assistant with a Web Frontend and the OpenAI Realtime API (Python)
 
-This application demonstrates how to use Python, [Twilio Voice](https://www.twilio.com/docs/voice) and [Media Streams](https://www.twilio.com/docs/voice/media-streams), and [OpenAI's Realtime API](https://platform.openai.com/docs/) to make a phone call to speak with an AI Assistant. 
-
-The application opens websockets with the OpenAI Realtime API and Twilio, and sends voice audio from one to the other to enable a two-way conversation.
-
-See [here](https://www.twilio.com/en-us/blog/voice-ai-assistant-openai-realtime-api-python) for a tutorial overview of the code.
-
-This application uses the following Twilio products in conjunction with OpenAI's Realtime API:
-- Voice (and TwiML, Media Streams)
-- Phone Numbers
+This application demonstrates how to stream audio from a browser to OpenAI's Realtime API over websockets. It no longer relies on Twilio and instead communicates directly with a web frontend.
 
 > [!NOTE]
 > Outbound calling is beyond the scope of this app. However, we demoed [one way to do it here](https://www.twilio.com/en-us/blog/outbound-calls-python-openai-realtime-api-voice).
@@ -97,3 +89,12 @@ To have the AI voice assistant talk before the user, uncomment the line `# await
 When the user speaks and OpenAI sends `input_audio_buffer.speech_started`, the code will clear the Twilio Media Streams buffer and send OpenAI `conversation.item.truncate`.
 
 Depending on your application's needs, you may want to use the [`input_audio_buffer.speech_stopped`](https://platform.openai.com/docs/api-reference/realtime-server-events/input-audio-buffer-speech-stopped) event, instead, or a combination of the two.
+
+## Docker
+
+Create a `.env` file using `.env.example` and then run:
+
+```bash
+docker compose up --build
+```
+
