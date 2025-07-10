@@ -59,7 +59,7 @@ async def handle_media_stream(websocket: WebSocket):
         # Connection specific state
         latest_media_timestamp = 0
 
-        async def receive_from_twilio():
+        async def receive_from_client():
             """Receive audio data from the frontend and send it to the OpenAI Realtime API."""
             nonlocal latest_media_timestamp
             try:
@@ -77,7 +77,7 @@ async def handle_media_stream(websocket: WebSocket):
                 if openai_ws.open:
                     await openai_ws.close()
 
-        async def send_to_twilio():
+        async def send_to_client():
             """Receive events from the OpenAI Realtime API and send audio back to the frontend."""
             try:
                 async for openai_message in openai_ws:
@@ -92,9 +92,9 @@ async def handle_media_stream(websocket: WebSocket):
                         audio_payload = base64.b64encode(base64.b64decode(response['delta'])).decode('utf-8')
                         await websocket.send_json({"audio": audio_payload})
             except Exception as e:
-                print(f"Error in send_to_twilio: {e}")
+                print(f"Error in send_to_client: {e}")
 
-        await asyncio.gather(receive_from_twilio(), send_to_twilio())
+        await asyncio.gather(receive_from_client(), send_to_client())
 
 
 async def send_initial_conversation_item(openai_ws):
@@ -138,7 +138,7 @@ async def initialize_session(openai_ws):
     await openai_ws.send(json.dumps(session_update))
 
     # Uncomment the next line to have the AI speak first
-    # await send_initial_conversation_item(openai_ws)
+    await send_initial_conversation_item(openai_ws)
 
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

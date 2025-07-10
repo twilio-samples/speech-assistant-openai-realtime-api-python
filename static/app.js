@@ -147,6 +147,9 @@ function playAudio(pcm) {
     const src = audioContext.createBufferSource();
     src.buffer = buffer;
     src.connect(audioContext.destination);
+    if (nextPlaybackTime < audioContext.currentTime) {
+        nextPlaybackTime = audioContext.currentTime;
+    }
     src.start(nextPlaybackTime);
     activeSources.push(src);
     src.onended = () => {
