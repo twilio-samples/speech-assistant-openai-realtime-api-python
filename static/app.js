@@ -5,6 +5,7 @@ let mediaStream;
 let isRecording = false;
 let pulseTimeout;
 let nextPlaybackTime = 0;
+let activeSources = [];
 
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
@@ -27,6 +28,10 @@ stopBtn.addEventListener('click', () => {
 
 function handleMessage(event) {
     const data = JSON.parse(event.data);
+    if (data.event === 'clear') {
+        clearAudio();
+        return;
+    }
     if (data.audio) {
         const ulaw = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
         const pcm = ulawToPCM(ulaw);
@@ -79,6 +84,21 @@ function stopAudio() {
     }
     nextPlaybackTime = 0;
     isRecording = false;
+    activeSources = [];
+}
+
+function clearAudio() {
+    activeSources.forEach(src => {
+        try { src.stop(); } catch (e) {}
+    });
+    activeSources = [];
+    if (audioContext) {
+        nextPlaybackTime = audioContext.currentTime;
+    } else {
+        nextPlaybackTime = 0;
+    }
+    hal.classList.remove('speaking');
+    hal.style.setProperty('--pulse-scale', 1);
 }
 
 function floatTo16BitPCM(input) {
@@ -128,6 +148,10 @@ function playAudio(pcm) {
     src.buffer = buffer;
     src.connect(audioContext.destination);
     src.start(nextPlaybackTime);
+    activeSources.push(src);
+    src.onended = () => {
+        activeSources = activeSources.filter(s => s !== src);
+    };
     const rms = Math.sqrt(pcm.reduce((s, v) => s + v * v, 0) / pcm.length);
     const scale = 1 + rms * 2;
     hal.style.setProperty('--pulse-scale', scale.toFixed(2));
