@@ -127,6 +127,9 @@ function playAudio(pcm) {
     const src = audioContext.createBufferSource();
     src.buffer = buffer;
     src.connect(audioContext.destination);
+    if (nextPlaybackTime < audioContext.currentTime) {
+        nextPlaybackTime = audioContext.currentTime;
+    }
     src.start(nextPlaybackTime);
     const rms = Math.sqrt(pcm.reduce((s, v) => s + v * v, 0) / pcm.length);
     const scale = 1 + rms * 2;
