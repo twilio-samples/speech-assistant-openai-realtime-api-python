@@ -40,8 +40,6 @@ if not OPENAI_API_KEY:
 async def index_page():
     return {"message": "Realtime Assistant server is running!"}
 
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
-
 @app.websocket("/ws")
 async def handle_media_stream(websocket: WebSocket):
     """Handle WebSocket connections between the frontend and OpenAI."""
@@ -132,6 +130,8 @@ async def initialize_session(openai_ws):
 
     # Uncomment the next line to have the AI speak first
     # await send_initial_conversation_item(openai_ws)
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
