@@ -9,7 +9,8 @@ let activeSources = [];
 
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
-const hal = document.getElementById('hal-container');
+const hal = document.querySelector('.animation');
+hal.classList.add('idle');
 
 startBtn.addEventListener('click', async () => {
     ws = new WebSocket(`ws://${location.host}/ws`);
@@ -98,7 +99,7 @@ function clearAudio() {
         nextPlaybackTime = 0;
     }
     hal.classList.remove('speaking');
-    hal.style.setProperty('--pulse-scale', 1);
+    hal.classList.add('idle');
 }
 
 function floatTo16BitPCM(input) {
@@ -152,17 +153,14 @@ function playAudio(pcm) {
     }
     src.start(nextPlaybackTime);
     activeSources.push(src);
+    hal.classList.remove('idle');
+    hal.classList.add('speaking');
     src.onended = () => {
         activeSources = activeSources.filter(s => s !== src);
+        if (activeSources.length === 0) {
+            hal.classList.remove('speaking');
+            hal.classList.add('idle');
+        }
     };
-    const rms = Math.sqrt(pcm.reduce((s, v) => s + v * v, 0) / pcm.length);
-    const scale = 1 + rms * 2;
-    hal.style.setProperty('--pulse-scale', scale.toFixed(2));
-    hal.classList.add('speaking');
-    clearTimeout(pulseTimeout);
-    pulseTimeout = setTimeout(() => {
-        hal.classList.remove('speaking');
-        hal.style.setProperty('--pulse-scale', 1);
-    }, 80);
     nextPlaybackTime += buffer.duration;
 }
