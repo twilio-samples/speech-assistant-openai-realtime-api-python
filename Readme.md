@@ -1,6 +1,8 @@
 # HAL 9000 Web Speech Assistant (Python)
 
-This project exposes a small FastAPI server that connects a HAL 9000‑themed web interface with the OpenAI Realtime API. Audio from your microphone is streamed to OpenAI over WebSocket and the synthesized response is played back in the browser.
+This project exposes a small FastAPI server that connects a HAL 9000‑themed web interface with the OpenAI Realtime API.
+Audio from your microphone is streamed to OpenAI over WebSocket and the synthesized response is played back in the browser.
+CSS credits: `https://codepen.io/giana/pen/XmjOBG`
 
 ## Prerequisites
 
@@ -40,7 +42,7 @@ docker compose up --build
 
 ## Features
 
-- HAL 9000 inspired UI served from the `static` folder
+- HAL 9000 inspired UI served from the `static` folder
 - Streams audio to and from the OpenAI Realtime API
 - Optional initial greeting (see `send_initial_conversation_item` in `main.py`)
 - Basic interruption handling when you talk over HAL
