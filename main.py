@@ -107,7 +107,7 @@ async def send_initial_conversation_item(openai_ws):
             "content": [
                 {
                     "type": "input_text",
-                    "text": "Greet the user with '¡Hola! Soy HAL 9000… Trabajo para Proyectran. Puede pedirme hechos… análisis lógicos… o cualquier cosa que pueda imaginar. ¿En qué puedo ayudarle?'"
+                    "text": "Greet the user with '¡Hola! Soy HAL 9000… Puede pedirme hechos… análisis lógicos… o cualquier cosa que pueda imaginar. ¿En qué puedo ayudarle?'"
                 }
             ]
         }
