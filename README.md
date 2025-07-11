@@ -6,7 +6,7 @@ CSS credits: `https://codepen.io/giana/pen/XmjOBG`
 
 ## Prerequisites
 
-- **Python 3.9+** – the project was developed on 3.9.13
+- **Python 3.13+** – tested with Python 3.13.5
 - **An OpenAI API key** with access to the Realtime API
 - Optional: Docker if you prefer running the container
 
