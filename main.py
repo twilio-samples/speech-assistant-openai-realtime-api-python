@@ -8,6 +8,8 @@ from fastapi import FastAPI, WebSocket
 from fastapi.responses import JSONResponse
 from fastapi.websockets import WebSocketDisconnect
 from dotenv import load_dotenv
+from datetime import datetime
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 load_dotenv()
 
@@ -15,6 +17,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini-realtime-preview-2024-12-17")
 PORT = int(os.getenv("PORT", 5050))
+TIMEZONE = os.getenv("TIMEZONE", "Atlantic/Canary")
 SYSTEM_MESSAGE = (
     "You are HAL 9000, a calm, logical, and eerily polite AI system. "
     "You speak in a soft, slow, and emotionless tone. You are confident, never raise your voice, "
@@ -30,12 +33,42 @@ LOG_EVENT_TYPES = [
     "input_audio_buffer.speech_stopped",
     "input_audio_buffer.speech_started",
     "session.created",
+    "conversation.item.created",
 ]
 SHOW_TIMING_MATH = False
 
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
+
+# Function calling setup
+def get_current_time() -> dict:
+    """Return the current time in ISO 8601 format for the configured time zone.
+    """
+    try:
+        tz = ZoneInfo(TIMEZONE)
+    except ZoneInfoNotFoundError:
+        print(f"No time zone found with key {TIMEZONE}, falling back to UTC")
+        tz = ZoneInfo("UTC")
+    now = datetime.now(tz=tz)
+    return {"current_time": now.isoformat()}
+
+
+async def hal9000_system_analysis(mode: str = "simple") -> dict:
+    """Simulate a HAL 9000 style system analysis."""
+    total = 20 if mode == "simple" else 60
+    for elapsed in range(0, total, 10):
+        progress = int((elapsed / total) * 100)
+        await asyncio.sleep(10)
+        print(f"HAL 9000 system analysis {mode}: {progress}%")
+    return {"status": "completed", "mode": mode, "duration": total}
+
+# Registered functions by name
+FUNCTIONS = {
+    "get_current_time": get_current_time,
+    "hal9000_system_analysis": hal9000_system_analysis,
+}
+
 
 if not OPENAI_API_KEY:
     raise ValueError("Missing the OpenAI API key. Please set it in the .env file.")
@@ -144,6 +177,29 @@ async def initialize_session(openai_ws):
             "instructions": SYSTEM_MESSAGE,
             "modalities": ["text", "audio"],
             "temperature": 0.8,
+            "tools": [
+                {
+                    "type": "function",
+                    "name": "get_current_time",
+                    "description": "Return the current time",
+                    "parameters": {"type": "object", "properties": {}},
+                },
+                {
+                    "type": "function",
+                    "name": "hal9000_system_analysis",
+                    "description": "Simulate a HAL 9000 system analysis",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "mode": {
+                                "type": "string",
+                                "enum": ["simple", "exhaustive"],
+                                "default": "simple",
+                            }
+                        },
+                    },
+                },
+            ],
         },
     }
     print("Sending session update:", json.dumps(session_update))
