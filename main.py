@@ -151,7 +151,10 @@ async def handle_media_stream(websocket: WebSocket):
                                     args = json.loads(call["arguments"] or "{}")
                                 except json.JSONDecodeError:
                                     args = {}
-                                result = func(**args)
+                                if asyncio.iscoroutinefunction(func):
+                                    result = await func(**args)
+                                else:
+                                    result = func(**args)
                             else:
                                 result = {"error": f"Unknown function {call['name']}"}
                             output_event = {
