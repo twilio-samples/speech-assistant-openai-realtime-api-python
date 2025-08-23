@@ -53,10 +53,10 @@ async def handle_incoming_call(request: Request):
     return HTMLResponse(content=str(response), media_type="application/xml")
 
 @app.websocket("/media-stream")
-async def handle_media_stream(websocket: WebSocket):
+async def handle_media_stream(twilio_ws: WebSocket):
     """Handle WebSocket connections between Twilio and OpenAI."""
     print("Client connected")
-    await websocket.accept()
+    await twilio_ws.accept()
 
     async with websockets.connect(
         'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01',
@@ -78,7 +78,7 @@ async def handle_media_stream(websocket: WebSocket):
             """Receive audio data from Twilio and send it to the OpenAI Realtime API."""
             nonlocal stream_sid, latest_media_timestamp
             try:
-                async for message in websocket.iter_text():
+                async for message in twilio_ws.iter_text():
                     data = json.loads(message)
                     if data['event'] == 'media' and openai_ws.open:
                         latest_media_timestamp = int(data['media']['timestamp'])
@@ -119,7 +119,7 @@ async def handle_media_stream(websocket: WebSocket):
                                 "payload": audio_payload
                             }
                         }
-                        await websocket.send_json(audio_delta)
+                        await twilio_ws.send_json(audio_delta)
 
                         if response_start_timestamp_twilio is None:
                             response_start_timestamp_twilio = latest_media_timestamp
@@ -130,7 +130,7 @@ async def handle_media_stream(websocket: WebSocket):
                         if response.get('item_id'):
                             last_assistant_item = response['item_id']
 
-                        await send_mark(websocket, stream_sid)
+                        await send_mark(twilio_ws, stream_sid)
 
                     # Trigger an interruption. Your use case might work better using `input_audio_buffer.speech_stopped`, or combining the two.
                     if response.get('type') == 'input_audio_buffer.speech_started':
@@ -162,7 +162,7 @@ async def handle_media_stream(websocket: WebSocket):
                     }
                     await openai_ws.send(json.dumps(truncate_event))
 
-                await websocket.send_json({
+                await twilio_ws.send_json({
                     "event": "clear",
                     "streamSid": stream_sid
                 })
@@ -220,7 +220,7 @@ async def initialize_session(openai_ws):
     await openai_ws.send(json.dumps(session_update))
 
     # Uncomment the next line to have the AI speak first
-    # await send_initial_conversation_item(openai_ws)
+    await send_initial_conversation_item(openai_ws)
 
 if __name__ == "__main__":
     import uvicorn
