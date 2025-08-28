@@ -67,7 +67,7 @@ async def handle_media_stream(websocket: WebSocket):
 
     async with websockets.connect(
         f"wss://api.openai.com/v1/realtime?model=gpt-realtime&temperature={TEMPERATURE}&voice={VOICE}",
-        extra_headers={
+        additional_headers={
             "Authorization": f"Bearer {OPENAI_API_KEY}"
         }
     ) as openai_ws:
@@ -86,7 +86,7 @@ async def handle_media_stream(websocket: WebSocket):
             try:
                 async for message in websocket.iter_text():
                     data = json.loads(message)
-                    if data['event'] == 'media' and openai_ws.open:
+                    if data['event'] == 'media' and openai_ws.state.name == 'OPEN':
                         latest_media_timestamp = int(data['media']['timestamp'])
                         audio_append = {
                             "type": "input_audio_buffer.append",
@@ -104,7 +104,7 @@ async def handle_media_stream(websocket: WebSocket):
                             mark_queue.pop(0)
             except WebSocketDisconnect:
                 print("Client disconnected.")
-                if openai_ws.open:
+                if openai_ws.state.name == 'OPEN':
                     await openai_ws.close()
 
         async def send_to_twilio():
@@ -127,14 +127,12 @@ async def handle_media_stream(websocket: WebSocket):
                         }
                         await websocket.send_json(audio_delta)
 
-                        if response_start_timestamp_twilio is None:
+
+                        if response.get("item_id") and response["item_id"] != last_assistant_item:
                             response_start_timestamp_twilio = latest_media_timestamp
+                            last_assistant_item = response["item_id"]
                             if SHOW_TIMING_MATH:
                                 print(f"Setting start timestamp for new response: {response_start_timestamp_twilio}ms")
-
-                        # Update last_assistant_item safely
-                        if response.get('item_id'):
-                            last_assistant_item = response['item_id']
 
                         await send_mark(websocket, stream_sid)
 
