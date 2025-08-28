@@ -28,7 +28,7 @@ LOG_EVENT_TYPES = [
     'input_audio_buffer.speech_stopped', 'input_audio_buffer.speech_started',
     'session.created', 'session.updated'
 ]
-SHOW_TIMING_MATH = True
+SHOW_TIMING_MATH = False
 
 app = FastAPI()
 
