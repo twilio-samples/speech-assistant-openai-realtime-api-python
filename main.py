@@ -102,6 +102,12 @@ async def handle_media_stream(websocket: WebSocket):
                     elif data['event'] == 'mark':
                         if mark_queue:
                             mark_queue.pop(0)
+                    elif data['event'] == 'stop':
+                        print(f"Call ended, stream {stream_sid} stopped")
+                        if openai_ws.open:
+                            await openai_ws.close()
+                        await websocket.close()
+                        return
             except WebSocketDisconnect:
                 print("Client disconnected.")
                 if openai_ws.state.name == 'OPEN':
